@@ -1,0 +1,34 @@
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Compiled extension
+*.so
+*.dll
+*.lib
+*.exp
+*.obj
+*.exe
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# IDE
+.idea/
+*.swp
+
+# Test cache
+.pytest_cache/
+
+# macOS
+.DS_Store

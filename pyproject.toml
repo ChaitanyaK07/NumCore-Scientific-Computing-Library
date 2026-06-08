@@ -1,0 +1,30 @@
+[build-system]
+requires = ["scikit-build-core>=0.5", "pybind11>=2.11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "numcore"
+version = "0.1.0"
+description = "C++ scientific computing library with Python bindings (pybind11)"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.21"]
+
+[project.optional-dependencies]
+dev   = ["pytest", "scipy"]
+bench = ["scipy", "numpy"]
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+
+# Tell scikit-build-core which Python packages to include in the wheel.
+# "python" is the folder containing __init__.py
+wheel.packages = ["python/numcore"]
+
+# The compiled extension (_NumCore*.pyd) is installed by CMake's install()
+# command into the "python" directory, so it ends up next to __init__.py.
+# No additional wheel.cmake-install-dir needed if CMakeLists has:
+#   install(TARGETS _NumCore DESTINATION python)
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
