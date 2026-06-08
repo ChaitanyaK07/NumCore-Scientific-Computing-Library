@@ -1,92 +1,315 @@
 # NumCore
 
-NumCore is a C++ scientific computing library with Python bindings using pybind11.  
-It implements core numerical methods including vector/matrix operations, linear algebra solvers, ODE solvers, and optimization algorithms — built from scratch with no BLAS/LAPACK dependency.
+NumCore is a lightweight scientific computing library written in modern C++ with Python bindings powered by `pybind11`.
+
+It implements core numerical methods from scratch, including custom vector/matrix classes, linear algebra routines, ODE solvers, and optimization algorithms. The package is designed as both a usable numerical library and a learning-focused implementation of fundamental scientific computing algorithms.
+
+> Install package: `numcore-scicomp`  
+> Python import name: `numcore`
 
 ---
 
 ## Features
 
-- **Linear Algebra** — LU decomposition (partial pivoting), `solve`, `det`, `inv`, `lstsq`
-- **ODE Solvers** — Euler, RK4, Dormand-Prince RK45 (adaptive step)
-- **Optimization** — Gradient Descent, Adam, Newton (numerical Hessian), BFGS (Armijo line search)
-- **Matrix / Vector** — Custom C++ classes with operator overloading, shape validation, exception handling, and numpy interop
+### Matrix and Vector Core
+
+- Custom `Vector` and `Matrix` classes
+- Operator overloading for natural arithmetic syntax
+- Shape and bounds validation
+- NumPy interoperability through `.numpy()`
+- Python bindings for direct use from Python
+
+### Linear Algebra
+
+- Matrix-vector multiplication
+- Linear system solving
+- Determinant computation
+- Matrix inverse
+- Least-squares solver
+- LU decomposition with partial pivoting
+
+### ODE Solvers
+
+- Forward Euler method
+- Classical fourth-order Runge-Kutta method, RK4
+- Adaptive Dormand-Prince RK45 solver
+
+### Optimization
+
+- Gradient Descent
+- Adam optimizer
+- Newton's method with numerical Hessian
+- BFGS with Armijo line search
 
 ---
 
 ## Installation
 
-```bash
-# Prerequisites
-pip install pybind11 scikit-build-core numpy
-
-# Build and install
-pip install .
-
-# Or build manually (development)
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release \
-  -Dpybind11_DIR=$(python3 -c "import pybind11; print(pybind11.get_cmake_dir())")
-make -j$(nproc)
-```
-
----
-
-## How to Run Tests
+### Install from PyPI
 
 ```bash
-# C++ unit tests (no pytest needed)
-cd build && ./test_cpp
-
-# Python tests
-cd build && python3 -m pytest ../tests/test_python.py -v
+pip install numcore-scicomp
 ```
 
----
-
-## Python Usage
+Then use it in Python as:
 
 ```python
-from numcore import Vector, Matrix
-from numcore import linalg, ode, optim
+import numcore as nc
+```
 
-# Vector operations
-x = Vector([1.0, 2.0, 3.0])
-print(x.norm())          # 3.7416...
-print(x.dot(x))          # 14.0
+### Install from source
 
-# Matrix operations
-A = Matrix(2, 2, [3.0, 1.0, 1.0, 2.0])
-print(A @ A)             # matrix multiply
-print(A.T().numpy())     # as numpy array
+```bash
+git clone https://github.com/ChaitanyaK07/NumCore---Scientific-Computing-Library.git
+cd NumCore---Scientific-Computing-Library
 
-# Solve  A x = b
-A = Matrix(3, 3, [2,1,-1, -3,-1,2, -2,1,2])
-b = Vector([8.0, -11.0, -3.0])
-x = linalg.solve(A, b)   # x = (2, 3, -1)
+python -m pip install .
+```
 
-# ODE — harmonic oscillator
-def f(t, y):
-    return Vector([y[1], -y[0]])
+For development:
 
-sol = ode.rk4(f, 0.0, 6.28, Vector([1.0, 0.0]), dt=0.01)
-t_arr = sol.t_array()    # numpy array of times
-y_arr = sol.y_array()    # (steps, 2) numpy array
+```bash
+python -m pip install -e .
+```
 
-# Adaptive step
-sol = ode.rk45(f, 0.0, 6.28, Vector([1.0, 0.0]))
+---
 
-# Optimization
-def loss(v):
-    return (1 - v[0])**2 + 100*(v[1] - v[0]**2)**2
+## Quick Start
 
-def grad(v):
-    return Vector([-2*(1-v[0]) - 400*v[0]*(v[1]-v[0]**2),
-                    200*(v[1]-v[0]**2)])
+```python
+import numcore as nc
 
-res = optim.bfgs(loss, grad, Vector([0.0, 0.0]))
-print(res.x[0], res.x[1])    # ≈ 1.0, 1.0
-print(res.converged, res.iterations)
+v = nc.Vector([3.0, 4.0])
+print(v.norm())   # 5.0
+```
+
+---
+
+## Python Examples
+
+### Vector operations
+
+```python
+import numcore as nc
+
+x = nc.Vector([1.0, 2.0, 3.0])
+
+print(x.norm())      # 3.741657...
+print(x.dot(x))      # 14.0
+print((2.0 * x)[1])  # 4.0
+```
+
+### Matrix operations
+
+```python
+import numcore as nc
+
+A = nc.Matrix(2, 2, [1.0, 2.0,
+                     3.0, 4.0])
+
+B = A @ A
+
+print(B[(0, 0)])      # 7.0
+print(B[(1, 1)])      # 22.0
+print(A.T().numpy())  # convert to NumPy array
+```
+
+### Solve a linear system
+
+```python
+import numcore as nc
+
+A = nc.Matrix(3, 3, [
+    2.0,  1.0, -1.0,
+   -3.0, -1.0,  2.0,
+   -2.0,  1.0,  2.0,
+])
+
+b = nc.Vector([8.0, -11.0, -3.0])
+
+x = nc.linalg.solve(A, b)
+
+print(x.numpy())  # approximately [2.0, 3.0, -1.0]
+```
+
+### ODE solving with RK4
+
+```python
+import numcore as nc
+
+def harmonic_oscillator(t, y):
+    return nc.Vector([y[1], -y[0]])
+
+sol = nc.ode.rk4(
+    harmonic_oscillator,
+    0.0,
+    6.28,
+    nc.Vector([1.0, 0.0]),
+    0.01,
+)
+
+t = sol.t_array()
+y = sol.y_array()
+
+print(t.shape)
+print(y.shape)
+```
+
+### Optimization with BFGS
+
+```python
+import numcore as nc
+
+def rosenbrock(v):
+    x = v[0]
+    y = v[1]
+    return (1.0 - x) ** 2 + 100.0 * (y - x * x) ** 2
+
+def rosenbrock_grad(v):
+    x = v[0]
+    y = v[1]
+    return nc.Vector([
+        -2.0 * (1.0 - x) - 400.0 * x * (y - x * x),
+        200.0 * (y - x * x),
+    ])
+
+res = nc.optim.bfgs(
+    rosenbrock,
+    rosenbrock_grad,
+    nc.Vector([0.0, 0.0]),
+)
+
+print(res.x[0], res.x[1])      # approximately 1.0, 1.0
+print(res.converged)
+print(res.iterations)
+```
+
+---
+
+## C++ Usage
+
+NumCore can also be used directly as a C++ header-based library.
+
+Example:
+
+```cpp
+#include <iostream>
+#include "NumCore/vector.hpp"
+#include "NumCore/matrix.hpp"
+#include "NumCore/linalg.hpp"
+
+int main() {
+    Vector v({3.0, 4.0});
+    std::cout << v.norm() << std::endl;
+
+    Matrix A(2, 2, {2.0, 1.0,
+                    5.0, 7.0});
+
+    Vector b({11.0, 13.0});
+    Vector x = linalg::solve(A, b);
+
+    std::cout << x[0] << " " << x[1] << std::endl;
+}
+```
+
+Compile with:
+
+```bash
+g++ main.cpp -I include -std=c++17 -o main
+```
+
+---
+
+## Building from Source
+
+### Python package build
+
+```bash
+python -m pip install .
+```
+
+### Manual CMake build
+
+If CMake cannot find `pybind11`, pass the pybind11 CMake directory explicitly.
+
+#### Windows PowerShell
+
+```powershell
+$pybind11_DIR = python -m pybind11 --cmakedir
+
+cmake -S . -B build -Dpybind11_DIR="$pybind11_DIR"
+cmake --build build --config Release
+```
+
+Run C++ tests:
+
+```powershell
+.\build\Release\tests_cpp.exe
+```
+
+#### Linux/macOS
+
+```bash
+pybind11_DIR=$(python -m pybind11 --cmakedir)
+
+cmake -S . -B build -Dpybind11_DIR="$pybind11_DIR" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+Run C++ tests:
+
+```bash
+./build/tests_cpp
+```
+
+---
+
+## Running Tests
+
+### Python tests
+
+```bash
+python -m pytest tests/tests_python.py -q
+```
+
+### C++ tests
+
+Windows:
+
+```powershell
+.\build\Release\tests_cpp.exe
+```
+
+Linux/macOS:
+
+```bash
+./build/tests_cpp
+```
+
+---
+
+## Project Structure
+
+```text
+NumCore/
+├── include/
+│   └── NumCore/
+│       ├── NumCore.hpp
+│       ├── vector.hpp
+│       ├── matrix.hpp
+│       ├── linalg.hpp
+│       ├── ode.hpp
+│       └── optim.hpp
+├── python/
+│   ├── bindings.cpp
+│   └── numcore/
+│       └── __init__.py
+├── tests/
+│   ├── tests_cpp.cpp
+│   └── tests_python.py
+├── CMakeLists.txt
+├── pyproject.toml
+└── README.md
 ```
 
 ---
@@ -95,49 +318,41 @@ print(res.converged, res.iterations)
 
 | Category | Algorithm | Notes |
 |---|---|---|
-| Linear Algebra | LU decomposition | Partial pivoting, correct det sign |
-| Linear Algebra | Gaussian elimination | Gauss-Jordan variant |
-| Linear Algebra | Least-squares (`lstsq`) | Via normal equations |
-| ODE | Euler | First-order, fixed step |
-| ODE | RK4 | Classic 4th-order Runge-Kutta |
-| ODE | RK45 | Dormand-Prince, adaptive PI step control |
-| Optimization | Gradient Descent | Fixed learning rate |
-| Optimization | Adam | Adaptive moments, bias correction |
-| Optimization | Newton | Numerical Hessian + Tikhonov regularization |
-| Optimization | BFGS | Rank-2 inverse Hessian update, Armijo line search |
+| Matrix/Vector | Core arithmetic | Operator overloading and validation |
+| Linear Algebra | Matrix-vector multiplication | C++ implementation exposed to Python |
+| Linear Algebra | Linear solve | LU-based solve with pivoting |
+| Linear Algebra | Determinant | Uses elimination/LU-style logic |
+| Linear Algebra | Matrix inverse | Solves against identity basis |
+| Linear Algebra | Least squares | Normal-equation based implementation |
+| ODE | Euler | Fixed-step first-order method |
+| ODE | RK4 | Fixed-step fourth-order Runge-Kutta |
+| ODE | RK45 | Adaptive Dormand-Prince method |
+| Optimization | Gradient Descent | User-supplied objective and gradient |
+| Optimization | Adam | Adaptive first/second moment optimizer |
+| Optimization | Newton | Numerical Hessian with regularization |
+| Optimization | BFGS | Quasi-Newton inverse-Hessian update |
 
 ---
 
-## Benchmarks
+## Notes
 
-```bash
-python benchmarks/bench_linalg.py
-python benchmarks/bench_ode.py
-python benchmarks/bench_optim.py
-```
+NumCore is implemented from scratch for clarity and educational value. It is not intended to replace mature high-performance numerical libraries such as NumPy, SciPy, Eigen, BLAS, or LAPACK for large-scale production workloads.
 
-| Routine | numcore | NumPy/SciPy | Notes |
-|---|---|---|---|
-| `solve` 32×32 | ~0.02 ms | ~0.02 ms | Parity at small N |
-| `bfgs` Rosenbrock | ~0.4 ms | ~2.8 ms | **7× faster** |
-| `rk4` 10k steps | ~90 ms | — | Python callback cost |
-
-NumPy uses OpenBLAS — faster at large dense matmul is expected and honest.  
-For small problems and custom kernels, C++ wins.
+For small examples, learning, experimentation, and understanding how numerical algorithms are built internally, NumCore provides a compact C++/Python implementation.
 
 ---
 
-## Demo
+## Roadmap
 
-```bash
-cd build && PYTHONPATH=. python ../examples/demo_numcore.py
-```
+- [ ] More decomposition methods, including QR and Cholesky
+- [ ] Sparse matrix support
+- [ ] Conjugate Gradient and iterative solvers
+- [ ] More robust benchmarking suite
+- [ ] Prebuilt wheels for more Python versions and operating systems
+- [ ] Expanded documentation and examples
 
 ---
 
-## Future Work
+## License
 
-- [ ] OpenMP parallelism for matmul
-- [ ] Sparse matrix (CSR format) + Conjugate Gradient
-- [ ] Eigen backend for dense BLAS-level performance
-- [ ] CUDA support for GPU acceleration
+Add a license file before public production use. Recommended options for open-source numerical libraries include MIT, BSD-3-Clause, or Apache-2.0.

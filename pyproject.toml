@@ -3,7 +3,7 @@ requires = ["scikit-build-core>=0.5", "pybind11>=2.11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "numcore"
+name = "numcore-scicomp"
 version = "0.1.0"
 description = "C++ scientific computing library with Python bindings (pybind11)"
 license = {text = "MIT"}
