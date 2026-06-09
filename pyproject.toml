@@ -4,8 +4,9 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "numcore-scicomp"
-version = "0.1.0"
+version = "0.1.1"
 description = "C++ scientific computing library with Python bindings (pybind11)"
+readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 dependencies = ["numpy>=1.21"]
